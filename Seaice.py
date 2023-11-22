@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from tqdm import *
 from torch import nn
 import torch.utils.data.dataset as dataset
 import torch.utils.data.dataloader as dataloader
@@ -8,27 +9,44 @@ import torch.utils.data.dataloader as dataloader
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def get_next_time_data(x, v, dt):
-    '''Get the x(tj+1) and v(tj+1) from x(tj) and v(tj)
+def update_state(data, dt):
+    '''Update the state of the system
+    
     Args:
-        x: float
-        v: float
+        data: np.array
         dt: float
+    
     Returns:
         x_next: float
         v_next: float
     '''
+    x = data[0]
+    v = data[1]
     u = 0.5 + 0.3*np.sin(2*np.pi*x)
     x_next = x + v*dt
     v_next = (u-v) * np.abs(u-v) * dt + v
-    return x_next, v_next
+    return np.array([x_next, v_next])
+
+
+class PhysicsLoss(nn.Module):
+    '''Customize PINN loss
+    '''
+    def __init__(self, dt):
+        super(PhysicsLoss, self).__init__()
+        self.dt = dt
+    
+    def forward(self, pred, tar):
+        loss = (pred[0] - tar[0] - tar[1]*dt) ** 2
+        return loss.sum()
     
 
 class SeaiceDataset(dataset.Dataset):
-    def __init__(self, data):
-        self.data = torch.tensor(data, dtype=torch.float32)
-        self.d1 = self.data[0, :]
-        self.d2 = self.data[1, :]
+    def __init__(self, initial, iter, dt):
+        self.data = []
+        self.data.append(initial)
+        for i in range(iter):
+            self.data.append(update_state(self.data[-1], dt))
+        self.data = torch.tensor(self.data, dtype=torch.float32)
         
     def __getitem__(self, index):
         return self.data[index]
@@ -63,38 +81,56 @@ def train(model, dataset, iters=10000, dt=(10 ** (-3))):
     
     Returns:
     '''
-    criterion = nn.CrossEntropyLoss()
+    criterion = PhysicsLoss(dt)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     
-    model.train()
-    for iter in range(iters):
+    model.train()    
+    for data in tqdm(dataset):
+        pred = model.predict(data)
+        loss = criterion(pred, data)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
         
-        for data in dataset:
-            pred = model.predict(data)
-            
-            x, v = data
-            x_next, v_next = get_next_time_data(x, v, dt)
-            data_next = torch.tensor([x_next, v_next])
-            
-            loss = criterion(pred, data_next)
-            loss += pred[0] - data_next[0] - data_next[1]
-            
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-        
-    pass
+    return model
 
+
+def test(model, dataset):
+    '''Test the model
+    
+    Args:
+        model: SeaiceModel
+        data: SeaiceDataset
+    
+    Returns:
+        loss: float
+    '''
+    criterion = nn.MSELoss()
+    model.eval()
+    loss = 0
+    for data in tqdm(dataset):
+        pred = model.predict(data)
+        loss += criterion(pred, data)
+    return loss.item()
 
 '''
 The main program
 '''
 if __name__ == '__main__':
     print("Start!")
+    iterations = 10000 # number of iterations
+    dt = 10 ** (-3) # time step
     initial_data = np.array([[0.3, 0.7], [0, 0]])
-    seaice_dataset = SeaiceDataset(initial_data)
-    seaice_dataloader = dataloader.DataLoader(seaice_dataset, batch_size=1, shuffle=True)
-    seaice_model = SeaiceModel(2, 8, 2)
+    seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
+    seaice_model = SeaiceModel(2, 10, 2)
+    seaice_model = train(seaice_model, seaice_dataset, iterations, dt)
+    train_loss = test(seaice_model, seaice_dataset)
+    print("Train MSE loss: ", train_loss)
+    print("Training finished!")
     
-    train(seaice_model, seaice_dataset)
+    print("Testing...")
+    initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
+    dataset_test = SeaiceDataset(initial_test, iterations, dt)
+    test_loss = test(seaice_model, dataset_test)
+    print("Test MSE Loss: ", test_loss)
     print("Done!")
