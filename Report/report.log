@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.10.25)  9 NOV 2023 21:31
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.10.25)  22 NOV 2023 16:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -134,16 +134,18 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
+File: ../NN_graph.png Graphic file (type bmp)
+<../NN_graph.png>
  [1
 
-] (./report.aux) ) 
+] [2] [3] (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 1676 strings out of 476683
- 26754 string characters out of 5807574
+ 1688 strings out of 476683
+ 26936 string characters out of 5807574
  1848012 words of memory out of 5000000
- 21944 multiletter control sequences out of 15000+600000
+ 21952 multiletter control sequences out of 15000+600000
  517125 words of font info for 57 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 55i,7n,62p,199b,194s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 55i,7n,62p,199b,209s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on report.pdf (1 page).
+Output written on report.pdf (3 pages).
