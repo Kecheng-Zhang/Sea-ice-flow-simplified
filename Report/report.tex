@@ -8,13 +8,11 @@
 \author{Kecheng Zhang}
 \maketitle
 
-\begin{abstract}
-    
-\end{abstract}
 
 \section{Introduction}
-This is an Introduction
-
+Se-ice flow is the study of the movement of sea ice. It is an important topic in the study of climate change. The movement of sea ice is affected by many factors, such as wind, ocean currents, and temperature.
+This project aims to model the movement of sea ice using a feed forward neural network. The model is trained using the data of the speed of the piece of sea ice at different positions. The model is then used to predict the movement of the sea ice over a period of time.
+This paper will first introduce the mathematics behind the model, then the neural network structure, and finally the performance of the model.
 \section{Method}
 
 \subsection{Mathematics}
@@ -42,5 +40,30 @@ The neural network is a feed-forward network with 2 hidden layers shown in Figur
 \end{figure}
 
 \section{Discussion}
-The simle feed forward neural network used to model the position and velocity of sea ice has shown a 
+\subsection{Performance}
+The performance of the feed forward neural network was evaluated based on its ability to replicate the physical behavior of sea-ice flow over a specified time frame, which has shown both significance and challenges. 
+
+The model requires little computational resources, and is capable to model the sea-ice flow with good accuracy in short amount of time. However, the error accumulates which leads to a reduction in accuracy as time increases.
+
+Figure 2 and 3 shows the training loss and tesing loss respectivly. Both of the two graphs has shown a increasing trend due to the accumulation of the error in each time step. The training loss increases slower as time increases, which suggests the model converges. While the testing loss suggests the model might be over-fitting. Figure 4 shows the mean square error in training (300.443) and testing (742.745).
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.6]{../Train_loss.png}
+    \caption[]{The training loss}
+    \includegraphics[scale=0.6]{../Test_loss.png}
+    \caption[]{The testing loss}
+    \includegraphics[scale=0.8]{../mse.png}
+    \caption[]{MSE}
+    \label{fig:loss}
+\end{figure}
+
+\subsection{Challenges}
+It can be observed that the model suffers heavily from the error accumulation since the calculation of each state relies on the previous state. To solve the issue, there are several possible solutions. Such as enriching the data, performing cross validation, using smaller time setps, and penatize cumulative error. In addition, periodically resetting and retrainig the model is also expected to reduce the error since the model will predict the states in a short future. 
+
+There are also alternative aspects worth investigating to improve the performace of the model. Further reseach include investigating a mroe complex architecture, incoorporating more numerical methods and physical laws.
+
+\section{Conclusion}
+In conclusion, the feed forward neural network is capable to model the sea-ice flow with good accuracy in short amount of time. However, the error accumulates which leads to a reduction in accuracy as time increases. Further research is required to improve the performance of the model.
+
 \end{document}

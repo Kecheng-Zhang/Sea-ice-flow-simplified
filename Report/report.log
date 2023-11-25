@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.10.25)  25 NOV 2023 17:45
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.10.25)  25 NOV 2023 20:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -134,18 +134,25 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
-File: ../NN_graph.png Graphic file (type bmp)
-<../NN_graph.png>
  [1
 
-] [2] [3] (./report.aux) ) 
+]
+File: ../NN_graph.png Graphic file (type bmp)
+<../NN_graph.png>
+File: ../Train_loss.png Graphic file (type bmp)
+<../Train_loss.png>
+File: ../Test_loss.png Graphic file (type bmp)
+<../Test_loss.png>
+File: ../mse.png Graphic file (type bmp)
+<../mse.png>
+ [2] [3] [4] [5] (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 1688 strings out of 476683
- 26936 string characters out of 5807574
- 1849012 words of memory out of 5000000
- 21952 multiletter control sequences out of 15000+600000
- 517125 words of font info for 57 fonts, out of 8000000 for 9000
+ 1707 strings out of 476683
+ 27211 string characters out of 5807574
+ 1852012 words of memory out of 5000000
+ 21972 multiletter control sequences out of 15000+600000
+ 517109 words of font info for 55 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 55i,7n,62p,206b,205s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 55i,7n,62p,499b,211s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on report.pdf (3 pages).
+Output written on report.pdf (5 pages).

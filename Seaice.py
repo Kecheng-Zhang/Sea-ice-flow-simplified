@@ -162,7 +162,7 @@ The main program
 print("Start!")
 iterations = 10000 # number of iterations
 dt = 10 ** (-3) # time step
-epochs = 10 # epoches
+epochs = 3 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
 seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
 seaice_model = SeaiceModel(2, 10, 2)
