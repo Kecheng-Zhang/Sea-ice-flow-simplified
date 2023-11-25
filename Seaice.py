@@ -64,7 +64,7 @@ class SeaiceModel(nn.Module):
         self.linear2 = nn.Linear(hidden_size, output_size)
     
     def forward(self, x):
-        x = torch.relu(self.linear1(x))
+        x = self.linear1(x)
         x = self.linear2(x)
         return x
     
@@ -73,7 +73,7 @@ class SeaiceModel(nn.Module):
         return pred
 
 
-def train(model, dataset, iters=10000, dt=(10 ** (-3))):
+def train(model, dataset, epochs=3, dt=(10 ** (-3))):
     '''Train the model
     
     Args:
@@ -86,13 +86,15 @@ def train(model, dataset, iters=10000, dt=(10 ** (-3))):
     criterion = PhysicsLoss(dt)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     
-    model.train()    
-    for data in tqdm(dataset):
-        pred = model.predict(data)
-        loss = criterion(pred, data)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+    model.train()
+    for epoch in range(epochs):
+        print("Epoch: ", epoch)
+        for data in tqdm(dataset):
+            pred = model.predict(data)
+            loss = criterion(pred, data)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
         
     return model
 
@@ -136,6 +138,7 @@ def test(model, dataset, gif_name):
         plt.legend(loc='upper right')
     animation1 = FuncAnimation(fig, update, frames=range(1, len(preds), 100), interval=1)
     animation1.save(gif_name, fps=100)
+    plt.close()
     return loss.item()
     
 
@@ -145,16 +148,17 @@ The main program
 print("Start!")
 iterations = 10000 # number of iterations
 dt = 10 ** (-3) # time step
+epochs = 10 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
 seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
 seaice_model = SeaiceModel(2, 10, 2)
-seaice_model = train(seaice_model, seaice_dataset, iterations, dt)
+seaice_model = train(seaice_model, seaice_dataset, epochs=epochs, dt=dt)
 train_loss = test(seaice_model, seaice_dataset, 'train.gif')
 print("Train MSE loss: ", train_loss)
 print("Training finished!")
 
 print("Testing...")
-initial_test = np.array([[0.42, 0.87], [0.1, 0.05]])
+initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
 dataset_test = SeaiceDataset(initial_test, iterations, dt)
 test_loss = test(seaice_model, dataset_test, 'test.gif')
 print("Test MSE Loss: ", test_loss)
