@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 from tqdm import *
 from torch import nn
 import torch.utils.data.dataset as dataset
@@ -95,7 +97,7 @@ def train(model, dataset, iters=10000, dt=(10 ** (-3))):
     return model
 
 
-def test(model, dataset):
+def test(model, dataset, gif_name):
     '''Test the model
     
     Args:
@@ -106,31 +108,53 @@ def test(model, dataset):
         loss: float
     '''
     criterion = nn.MSELoss()
+    preds = []
     model.eval()
     loss = 0
     for data in tqdm(dataset):
         pred = model.predict(data)
+        preds.append(pred)
         loss += criterion(pred, data)
+    
+    preds = torch.stack(preds).detach().numpy()
+    data_np = dataset.data.detach().numpy()
+    print(preds.shape)
+    # create animation
+    fig = plt.figure()
+    def update(i):
+        plt.cla()
+        plt.xlim(-1, 7)
+        plt.ylim(-1, 1)
+        x1 = preds[i][0][0]
+        x2 = preds[i][0][1]
+        x1_t = data_np[i][0][0]
+        x2_t = data_np[i][0][1]
+        plt.plot(x1, 0, 'ro', label='Ice 1')
+        plt.plot(x2, 0, 'bo', label='Ice 2')
+        plt.plot(x1_t, 0, 'r*', label='Ice 1 (true)')
+        plt.plot(x2_t, 0, 'b*', label='Ice 2 (true)')
+    animation1 = FuncAnimation(fig, update, frames=range(1, len(preds), 100), interval=1)
+    animation1.save(gif_name, fps=100)
     return loss.item()
+    
 
 '''
 The main program
 '''
-if __name__ == '__main__':
-    print("Start!")
-    iterations = 10000 # number of iterations
-    dt = 10 ** (-3) # time step
-    initial_data = np.array([[0.3, 0.7], [0, 0]])
-    seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
-    seaice_model = SeaiceModel(2, 10, 2)
-    seaice_model = train(seaice_model, seaice_dataset, iterations, dt)
-    train_loss = test(seaice_model, seaice_dataset)
-    print("Train MSE loss: ", train_loss)
-    print("Training finished!")
-    
-    print("Testing...")
-    initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
-    dataset_test = SeaiceDataset(initial_test, iterations, dt)
-    test_loss = test(seaice_model, dataset_test)
-    print("Test MSE Loss: ", test_loss)
-    print("Done!")
+print("Start!")
+iterations = 10000 # number of iterations
+dt = 10 ** (-3) # time step
+initial_data = np.array([[0.3, 0.7], [0, 0]])
+seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
+seaice_model = SeaiceModel(2, 10, 2)
+seaice_model = train(seaice_model, seaice_dataset, iterations, dt)
+train_loss = test(seaice_model, seaice_dataset, 'train.gif')
+print("Train MSE loss: ", train_loss)
+print("Training finished!")
+
+print("Testing...")
+initial_test = np.array([[0.42, 0.87], [0.1, 0.05]])
+dataset_test = SeaiceDataset(initial_test, iterations, dt)
+test_loss = test(seaice_model, dataset_test, 'test.gif')
+print("Test MSE Loss: ", test_loss)
+print("Done!")
