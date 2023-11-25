@@ -133,6 +133,7 @@ def test(model, dataset, gif_name):
         plt.plot(x2, 0, 'bo', label='Ice 2')
         plt.plot(x1_t, 0, 'r*', label='Ice 1 (true)')
         plt.plot(x2_t, 0, 'b*', label='Ice 2 (true)')
+        plt.legend(loc='upper right')
     animation1 = FuncAnimation(fig, update, frames=range(1, len(preds), 100), interval=1)
     animation1.save(gif_name, fps=100)
     return loss.item()
