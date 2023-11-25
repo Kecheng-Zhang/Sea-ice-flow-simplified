@@ -113,15 +113,17 @@ def test(model, dataset, gif_name):
     preds = []
     model.eval()
     loss = 0
+    losses = []
     for data in tqdm(dataset):
         pred = model.predict(data)
         preds.append(pred)
         loss += criterion(pred, data)
+        losses.append(loss.item())
     
+    # create animation
     preds = torch.stack(preds).detach().numpy()
     data_np = dataset.data.detach().numpy()
     print(preds.shape)
-    # create animation
     fig = plt.figure()
     def update(i):
         plt.cla()
@@ -135,10 +137,22 @@ def test(model, dataset, gif_name):
         plt.plot(x2, 0, 'bo', label='Ice 2')
         plt.plot(x1_t, 0, 'r*', label='Ice 1 (true)')
         plt.plot(x2_t, 0, 'b*', label='Ice 2 (true)')
+        plt.xlabel('Position')
+        plt.title(gif_name+' Time: {:.2f}'.format(i*0.001))
         plt.legend(loc='upper right')
-    animation1 = FuncAnimation(fig, update, frames=range(1, len(preds), 100), interval=1)
-    animation1.save(gif_name, fps=100)
+    animation = FuncAnimation(fig, update, frames=range(1, len(preds), 100), interval=1)
+    animation.save(gif_name+".gif", fps=100)
     plt.close()
+    
+    # save the loss graph
+    plt.figure()
+    plt.plot(range(len(losses)), losses)
+    plt.title(gif_name+' Loss')
+    plt.xlabel('Time')
+    plt.ylabel('Loss')
+    plt.savefig(gif_name+"_loss.png")
+    plt.close()
+    
     return loss.item()
     
 
@@ -153,13 +167,13 @@ initial_data = np.array([[0.3, 0.7], [0, 0]])
 seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
 seaice_model = SeaiceModel(2, 10, 2)
 seaice_model = train(seaice_model, seaice_dataset, epochs=epochs, dt=dt)
-train_loss = test(seaice_model, seaice_dataset, 'train.gif')
+train_loss = test(seaice_model, seaice_dataset, 'Train')
 print("Train MSE loss: ", train_loss)
 print("Training finished!")
 
 print("Testing...")
 initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
 dataset_test = SeaiceDataset(initial_test, iterations, dt)
-test_loss = test(seaice_model, dataset_test, 'test.gif')
+test_loss = test(seaice_model, dataset_test, 'Test')
 print("Test MSE Loss: ", test_loss)
 print("Done!")

@@ -32,7 +32,7 @@ $$\begin{cases}
 and $$ \frac{x_k(t_{j+1}) - x_k(t_j)}{dt} = v_k(t_j)$$
 
 \subsection{Neural Network}
-The neural network is a feed-forward network with 2 hidden layers shown in Figure 1.
+The neural network is a feed-forward network with 2 hidden layers shown in Figure 1. The loss funciton used to train the model is $$\Sigma^2_{k=1}(x_k - x_{k,in} - v_k\delta t)$$
 
 \begin{figure}
     \centering
@@ -42,6 +42,5 @@ The neural network is a feed-forward network with 2 hidden layers shown in Figur
 \end{figure}
 
 \section{Discussion}
-
-
+The simle feed forward neural network used to model the position and velocity of sea ice has shown a 
 \end{document}
