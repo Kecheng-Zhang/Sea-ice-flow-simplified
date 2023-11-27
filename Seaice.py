@@ -117,7 +117,7 @@ def test(model, dataset, gif_name):
     for data in tqdm(dataset):
         pred = model.predict(data)
         preds.append(pred)
-        loss += criterion(pred, data)
+        loss = criterion(pred, data)
         losses.append(loss.item())
     
     # create animation
@@ -154,7 +154,6 @@ def test(model, dataset, gif_name):
     plt.close()
     
     return loss.item()
-    
 
 '''
 The main program
@@ -162,7 +161,7 @@ The main program
 print("Start!")
 iterations = 10000 # number of iterations
 dt = 10 ** (-3) # time step
-epochs = 3 # epoches
+epochs = 2 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
 seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
 seaice_model = SeaiceModel(2, 10, 2)
