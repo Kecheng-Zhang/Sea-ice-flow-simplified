@@ -30,7 +30,7 @@ $$\begin{cases}
 and $$ \frac{x_k(t_{j+1}) - x_k(t_j)}{dt} = v_k(t_j)$$
 
 \subsection{Neural Network}
-The neural network is a feed-forward network with 2 hidden layers shown in Figure 1. The loss funciton used to train the model is $$\Sigma^2_{k=1}(x_k - x_{k,in} - v_k\delta t)^2$$
+The neural network is a feed-forward network with 2 hidden layers shown in Figure 1. The loss funciton used to train the model is the sum of two loss functions, the displacement and the momentum, which are defined as $$\Sigma^2_{k=1}(x_k - x_{k,in} - v_k\delta t)^2$$ and $$\Sigma^2_{k=1}(v_k - v_{k,in} - (u - v_k) |u - v_k|\delta t)^2$$ respectivly.
 
 \begin{figure}
     \centering

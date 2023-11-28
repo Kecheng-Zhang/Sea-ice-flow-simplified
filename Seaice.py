@@ -38,8 +38,10 @@ class PhysicsLoss(nn.Module):
         self.dt = dt
     
     def forward(self, pred, tar):
-        loss = (pred[0] - tar[0] - tar[1]*dt) ** 2
-        return loss.sum()
+        loss1 = (pred[0] - tar[0] - tar[1]*dt) ** 2
+        u = 0.5 + 0.3*torch.sin(2*np.pi*tar[0])
+        loss2 = (pred[1] - tar[1] - (u - tar[1]) * torch.abs(u - tar[1]) * self.dt) ** 2
+        return (loss1 + loss2).sum()
     
 
 class SeaiceDataset(dataset.Dataset):
@@ -161,7 +163,7 @@ The main program
 print("Start!")
 iterations = 10000 # number of iterations
 dt = 10 ** (-3) # time step
-epochs = 2 # epoches
+epochs = 30 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
 seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
 seaice_model = SeaiceModel(2, 10, 2)
