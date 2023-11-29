@@ -100,6 +100,32 @@ def train(model, dataset, epochs=3, dt=(10 ** (-3))):
         
     return model
 
+def train_WW(model, dataset, epochs=3, dt=(10 ** (-3))):
+    '''Train the model
+    
+    Args:
+        model: SeaiceModel
+        data: SeaiceDataset
+        epochs: int
+    
+    Returns:
+    '''
+    criterion = PhysicsLoss(dt)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    
+    model.train()
+    for epoch in range(epochs):
+        print("Epoch: ", epoch)
+        counter = 1
+        for data in tqdm(dataset):
+            pred = model.predict(data)
+            loss = criterion(pred, data) * (counter ** 2)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+    return model
+
 
 def test(model, dataset, gif_name):
     '''Test the model
@@ -166,10 +192,15 @@ dt = 10 ** (-3) # time step
 epochs = 30 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
 seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
+# Start training
 seaice_model = SeaiceModel(2, 10, 2)
 seaice_model = train(seaice_model, seaice_dataset, epochs=epochs, dt=dt)
+seaice_model_ww = SeaiceModel(2, 10, 2)
+seaice_model_ww = train_WW(seaice_model_ww, seaice_dataset, epochs=epochs, dt=dt)
 train_loss = test(seaice_model, seaice_dataset, 'Train')
 print("Train MSE loss: ", train_loss)
+train_loss_ww = test(seaice_model_ww, seaice_dataset, 'Train_WW')
+print("Train with Weights MSE loss: ", train_loss_ww)
 print("Training finished!")
 
 print("Testing...")
@@ -177,4 +208,6 @@ initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
 dataset_test = SeaiceDataset(initial_test, iterations, dt)
 test_loss = test(seaice_model, dataset_test, 'Test')
 print("Test MSE Loss: ", test_loss)
+test_loss_ww = test(seaice_model_ww, dataset_test, 'Test_WW')
+print("Test with Weights MSE Loss: ", test_loss_ww)
 print("Done!")

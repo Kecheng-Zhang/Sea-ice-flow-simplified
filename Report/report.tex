@@ -1,6 +1,7 @@
 \documentclass[12pt, a4paper]{article}
 \usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{hyperref}
 
 
 \begin{document}
@@ -30,11 +31,12 @@ $$\begin{cases}
 and $$ \frac{x_k(t_{j+1}) - x_k(t_j)}{dt} = v_k(t_j)$$
 
 \subsection{Neural Network}
-The neural network is a feed-forward network with 2 hidden layers shown in Figure 1. The loss funciton used to train the model is the sum of two loss functions, the displacement and the momentum, which are defined as $$\Sigma^2_{k=1}(x_k - x_{k,in} - v_k\delta t)^2$$ and $$\Sigma^2_{k=1}(v_k - v_{k,in} - (u - v_k) |u - v_k|\delta t)^2$$ respectivly.
+The neural network is a feed-forward network with 2 hidden layers shown in Figure 1. The loss funciton used to train the model is the sum of two loss functions, the displacement and the momentum, which are defined as
+$$Loss = \Sigma^2_{k=1}(x_k - x_{k,in} - v_k\delta t)^2 + \Sigma^2_{k=1}(v_k - v_{k,in} - (u - v_k) |u - v_k|\delta t)^2$$
 
 \begin{figure}
     \centering
-    \includegraphics[scale=0.5]{../NN_graph.png}
+    \includegraphics[scale=0.3]{../NN_graph.png}
     \caption[]{Neural Network structure}
     \label{fig:neural_network}
 \end{figure}
@@ -45,25 +47,47 @@ The performance of the feed forward neural network was evaluated based on its ab
 
 The model requires little computational resources, and is capable to model the sea-ice flow with good accuracy in short amount of time. However, the error accumulates which leads to a reduction in accuracy as time increases.
 
-Figure 2 and 3 shows the training loss and tesing loss respectivly. Both of the two graphs has shown a increasing trend due to the accumulation of the error in each time step. The training loss increases slower as time increases, which suggests the model converges. While the testing loss suggests the model might be over-fitting. Figure 4 shows the mean square error in training (0.008) and testing (0.531).
+Figure 2 shows the training loss and tesing loss respectivly. The tesing error has shown a increasing trend due to the accumulation of the error in each time step. The training loss decreases as time increases, which suggests the model converges.
 
 \begin{figure}
     \centering
-    \includegraphics[scale=0.6]{../Train_loss.png}
-    \caption[]{The training loss}
-    \includegraphics[scale=0.6]{../Test_loss.png}
-    \caption[]{The testing loss}
-    \includegraphics[scale=0.8]{../mse.png}
-    \caption[]{MSE}
+    \includegraphics[scale=0.4]{../Train_loss.png}
+    \includegraphics[scale=0.4]{../Test_loss.png}
+    \caption[]{Training and testing loss}
     \label{fig:loss}
 \end{figure}
 
-\subsection{Challenges}
-It can be observed that the model suffers heavily from the error accumulation since the calculation of each state relies on the previous state. To solve the issue, there are several possible solutions. Such as enriching the data, performing cross validation, using smaller time setps, and penatize cumulative error. In addition, periodically resetting and retrainig the model is also expected to reduce the error since the model will predict the states in a short future. 
+\subsection{Weighted Loss}
+In addition to the loss function defined in the mathematics section, a weighted loss function is also tested. The weighted loss function is defined as
+$$ Loss_{weighted} = Loss \times j$$
+where $j$ is the time step. The weighted loss function is expected to reduce the error accumulation since the error is penatized more as time increases. Figure 3 shows the training loss and testing loss of the model using weighted loss function. 
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{../Train_WW_loss.png}
+    \includegraphics[scale=0.4]{../Test_WW_loss.png}
+    \caption[]{Training and testing loss using weighted loss function}
+    \label{fig:loss_ww}
+\end{figure}
+
+\subsection{Results}
+It can be observed that the model is capable to model the sea-ice flow with good accuracy. Using weighted loss function has shown a better performance in terms of reducing the error accumulation. Figure 4 shows the mean square error of the model of the two methods. It can be observed that the model using weighted loss function has a lower mean square error (0.00011) compair to the one without weighted loss function (0.00155).
 
 There are also alternative aspects worth investigating to improve the performace of the model. Further reseach include investigating a mroe complex architecture, incoorporating more numerical methods and physical laws.
 
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.8]{../mse.png}
+    \caption[]{Mean square error}
+    \label{fig:mse}
+\end{figure}
+
 \section{Conclusion}
-In conclusion, the feed forward neural network is capable to model the sea-ice flow with good accuracy in short amount of time. However, the error accumulates which leads to a reduction in accuracy as time increases. Further research is required to improve the performance of the model.
+In conclusion, the feed forward neural network is capable to model the sea-ice flow with good accuracy in short amount of time. In addition, the use of weighted loss function has proven to be effective in reducing the error accumulation.
+
+\newpage
+\section{Appendix}
+Code on 
+\href{https://github.com/Kecheng-Zhang/Sea-ice-flow-simplified}{https://github.com/Kecheng-Zhang/Sea-ice-flow-simplified}
 
 \end{document}
