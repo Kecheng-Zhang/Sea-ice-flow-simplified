@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.10.25)  29 NOV 2023 12:49
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.10.25)  30 NOV 2023 13:19
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -270,17 +270,21 @@ File: ../Test_WW_loss.png Graphic file (type bmp)
  [3]
 File: ../mse.png Graphic file (type bmp)
 <../mse.png>
- [4] [5] (./report.aux)
+File: ../Test_differnt_ocean_field_loss.png Graphic file (type bmp)
+<../Test_differnt_ocean_field_loss.png>
+File: ../mse2.png Graphic file (type bmp)
+<../mse2.png>
+ [4] [5] [6] (./report.aux)
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 501A813E53F8A754F8A8E87CC7AB4C32;1017.
+(rerunfilecheck)             Checksum: 9C03E5B5BE3CBCE35AB0BF0F0BF42438;924.
  ) 
 Here is how much of TeX's memory you used:
- 8665 strings out of 476683
- 137184 string characters out of 5807574
+ 8683 strings out of 476683
+ 137667 string characters out of 5807574
  1854012 words of memory out of 5000000
- 28816 multiletter control sequences out of 15000+600000
+ 28832 multiletter control sequences out of 15000+600000
  517469 words of font info for 56 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 72i,7n,76p,457b,350s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 72i,7n,76p,357b,350s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on report.pdf (5 pages).
+Output written on report.pdf (6 pages).

@@ -11,12 +11,13 @@ import torch.utils.data.dataloader as dataloader
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def update_state(data, dt):
+def update_state(data, dt, f):
     '''Update the state of the system
     
     Args:
         data: np.array
         dt: float
+        f: function
     
     Returns:
         x_next: float
@@ -24,7 +25,7 @@ def update_state(data, dt):
     '''
     x = data[0]
     v = data[1]
-    u = 0.5 + 0.3*np.sin(2*np.pi*x)
+    u = f(x)
     x_next = x + v*dt
     v_next = (u-v) * np.abs(u-v) * dt + v
     return np.array([x_next, v_next])
@@ -33,23 +34,26 @@ def update_state(data, dt):
 class PhysicsLoss(nn.Module):
     '''Customize PINN loss
     '''
-    def __init__(self, dt):
+    def __init__(self, dt, f):
         super(PhysicsLoss, self).__init__()
         self.dt = dt
+        self.f = f
     
     def forward(self, pred, tar):
-        loss1 = (pred[0] - tar[0] - tar[1]*dt) ** 2
-        u = 0.5 + 0.3*torch.sin(2*np.pi*tar[0])
+        loss1 = (pred[0] - tar[0] - tar[1]*self.dt) ** 2
+        u = self.f(tar[0])
         loss2 = (pred[1] - tar[1] - (u - tar[1]) * torch.abs(u - tar[1]) * self.dt) ** 2
         return (loss1 + loss2).sum()
     
 
 class SeaiceDataset(dataset.Dataset):
-    def __init__(self, initial, iter, dt):
+    def __init__(self, initial, iter, dt, f):
         self.data = []
         self.data.append(initial)
+        self.dt = dt
+        self.f = f
         for i in range(iter):
-            self.data.append(update_state(self.data[-1], dt))
+            self.data.append(update_state(self.data[-1], self.dt, self.f))
         self.data = torch.tensor(self.data, dtype=torch.float32)
         
     def __getitem__(self, index):
@@ -75,7 +79,7 @@ class SeaiceModel(nn.Module):
         return pred
 
 
-def train(model, dataset, epochs=3, dt=(10 ** (-3))):
+def train(model, dataset, f, epochs=3, dt=(10 ** (-3))):
     '''Train the model
     
     Args:
@@ -85,7 +89,7 @@ def train(model, dataset, epochs=3, dt=(10 ** (-3))):
     
     Returns:
     '''
-    criterion = PhysicsLoss(dt)
+    criterion = PhysicsLoss(dt, f)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     
     model.train()
@@ -100,7 +104,7 @@ def train(model, dataset, epochs=3, dt=(10 ** (-3))):
         
     return model
 
-def train_WW(model, dataset, epochs=3, dt=(10 ** (-3))):
+def train_WW(model, dataset, f, epochs=3, dt=(10 ** (-3))):
     '''Train the model
     
     Args:
@@ -110,7 +114,7 @@ def train_WW(model, dataset, epochs=3, dt=(10 ** (-3))):
     
     Returns:
     '''
-    criterion = PhysicsLoss(dt)
+    criterion = PhysicsLoss(dt, f)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     
     model.train()
@@ -183,31 +187,63 @@ def test(model, dataset, gif_name):
     
     return loss.item()
 
+def f1(x):
+    return 0.5 + 0.3*np.sin(2*np.pi*x)
+
+def f2(x):
+    return 0.2 + 0.5*np.sin(2*np.pi*x)
+
 '''
 The main program
 '''
-print("Start!")
-iterations = 10000 # number of iterations
-dt = 10 ** (-3) # time step
-epochs = 30 # epoches
-initial_data = np.array([[0.3, 0.7], [0, 0]])
-seaice_dataset = SeaiceDataset(initial_data, iterations, dt)
-# Start training
-seaice_model = SeaiceModel(2, 10, 2)
-seaice_model = train(seaice_model, seaice_dataset, epochs=epochs, dt=dt)
-seaice_model_ww = SeaiceModel(2, 10, 2)
-seaice_model_ww = train_WW(seaice_model_ww, seaice_dataset, epochs=epochs, dt=dt)
-train_loss = test(seaice_model, seaice_dataset, 'Train')
-print("Train MSE loss: ", train_loss)
-train_loss_ww = test(seaice_model_ww, seaice_dataset, 'Train_WW')
-print("Train with Weights MSE loss: ", train_loss_ww)
-print("Training finished!")
 
-print("Testing...")
-initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
-dataset_test = SeaiceDataset(initial_test, iterations, dt)
-test_loss = test(seaice_model, dataset_test, 'Test')
-print("Test MSE Loss: ", test_loss)
-test_loss_ww = test(seaice_model_ww, dataset_test, 'Test_WW')
-print("Test with Weights MSE Loss: ", test_loss_ww)
-print("Done!")
+def q1():
+    print("Start Q1!")
+    iterations = 10000 # number of iterations
+    dt = 10 ** (-3) # time step
+    epochs = 30 # epoches
+    initial_data = np.array([[0.3, 0.7], [0, 0]])
+    seaice_dataset = SeaiceDataset(initial_data, iterations, dt, f1)
+    # Start training
+    seaice_model = SeaiceModel(2, 10, 2)
+    seaice_model = train(seaice_model, seaice_dataset, f1, epochs=epochs, dt=dt)
+    seaice_model_ww = SeaiceModel(2, 10, 2)
+    seaice_model_ww = train_WW(seaice_model_ww, seaice_dataset, f1, epochs=epochs, dt=dt)
+    train_loss = test(seaice_model, seaice_dataset, 'Train')
+    print("Train MSE loss: ", train_loss)
+    train_loss_ww = test(seaice_model_ww, seaice_dataset, 'Train_WW')
+    print("Train with Weights MSE loss: ", train_loss_ww)
+    print("Training finished!")
+
+    print("Testing...")
+    initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
+    dataset_test = SeaiceDataset(initial_test, iterations, dt, f1)
+    test_loss = test(seaice_model, dataset_test, 'Test')
+    print("Test MSE Loss: ", test_loss)
+    test_loss_ww = test(seaice_model_ww, dataset_test, 'Test_WW')
+    print("Test with Weights MSE Loss: ", test_loss_ww)
+    print("Done!")
+    
+    
+def q2():
+    print("Start Q2!")
+    iterations = 10000 # number of iterations
+    dt = 10 ** (-3) # time step
+    epochs = 30 # epoches
+    initial_data = np.array([[0.3, 0.7], [0, 0]])
+    seaice_dataset1 = SeaiceDataset(initial_data, iterations, dt, f1)
+    # Get the model
+    seaice_model = SeaiceModel(2, 10, 2)
+    seaice_model = train(seaice_model, seaice_dataset1, f1, epochs=epochs, dt=dt)
+    # test the model
+    initial_test = np.array([[0.42, 0.87], [-0.1, 0.05]])
+    seaice_dataset_test1 = SeaiceDataset(initial_test, iterations, dt, f1)
+    
+    seaice_dataset_test2 = SeaiceDataset(initial_test, iterations, dt, f2)
+    test_loss1 = test(seaice_model, seaice_dataset_test1, 'Test_normal_ocean_field')
+    test_loss2 = test(seaice_model, seaice_dataset_test2, 'Test_differnt_ocean_field')
+    print("Test MSE Loss: ", test_loss1)
+    print("Test MSE Loss: ", test_loss2)
+    print("Done!")
+    
+q2()
