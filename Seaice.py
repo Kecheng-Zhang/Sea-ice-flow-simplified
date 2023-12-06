@@ -61,6 +61,10 @@ class SeaiceDataset(dataset.Dataset):
     
     def __len__(self):
         return len(self.data)
+    
+    def resize(self, const):
+        self.data = self.data[::const]
+        return self.data
 
 
 class SeaiceModel(nn.Module):
