@@ -135,7 +135,6 @@ def test(model, dataset, gif_name):
     # create animation
     preds = torch.stack(preds).detach().numpy()
     data_np = dataset.data.detach().numpy()
-    print(preds.shape)
     fig = plt.figure()
     def update(i):
         plt.cla()
@@ -165,7 +164,7 @@ def test(model, dataset, gif_name):
     plt.savefig(gif_name+"_loss.png")
     plt.close()
     
-    return loss.item()
+    return loss.item() ** (0.5) # return RMSE
 
 def f1(x, t):
     return 0.5 + 0.3*np.sin(np.pi*x + t)
@@ -176,6 +175,11 @@ def f2(x, t):
 def f_osc(x):
     return 0.5*np.sin(2*np.pi*x)
 
+def f_rand(x, t):
+    a = np.random.random()
+    b = np.random.random()
+    return a + b * np.sin(np.pi*x + t)
+
 '''
 The main program
 '''
@@ -183,16 +187,22 @@ iterations = 10000 # number of iterations
 dt = 10 ** (-3) # time step
 epochs = 30 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
-initial_test_data = np.array([[0.42, 0.87], [-0.1, 0.05]])
 train_dataset = SeaiceDataset(initial_data, iterations, dt, f1)
-test_dataset = SeaiceDataset(initial_test_data, iterations, dt, f2)
 
 seaice_model = SeaiceModel(2, 10, 2)
 if os.path.exists("seaice_model.pt"):
     seaice_model.load_state_dict(torch.load("seaice_model.pt"))
 else:
-    seaice_model = train(seaice_model, train_dataset, f_osc, epochs, dt)
+    seaice_model = train(seaice_model, train_dataset, f1, epochs, dt)
     torch.save(seaice_model.state_dict(), "seaice_model.pt")
-    
-loss = test(seaice_model, test_dataset, "Test_seaice")
-print("Loss: ", loss)
+
+losses = []
+for  i in range(16):
+    initial_test_data = np.random.randn(2,2)
+    test_dataset = SeaiceDataset(initial_test_data, iterations*100, dt/100, f_rand)
+    test_dataset.resize(100)
+    loss = test(seaice_model, test_dataset, "seaice_{}".format(i))
+    print("Loss: ", loss)
+    losses.append(loss)
+
+np.savetxt('RMSE.txt', losses, delimiter='\n')
