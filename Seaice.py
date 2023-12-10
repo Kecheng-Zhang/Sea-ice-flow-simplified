@@ -204,5 +204,7 @@ for  i in range(16):
     loss = test(seaice_model, test_dataset, "seaice_{}".format(i))
     print("Loss: ", loss)
     losses.append(loss)
-
+    
+mean = np.mean(losses)
+print("Mean: ", mean)
 np.savetxt('RMSE.txt', losses, delimiter='\n')
