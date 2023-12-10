@@ -164,7 +164,7 @@ def test(model, dataset, gif_name):
     plt.savefig(gif_name+"_loss.png")
     plt.close()
     
-    return loss.item() ** (0.5) # return RMSE
+    return np.array(losses).mean() ** (0.5) # return RMSE
 
 def f1(x, t):
     return 0.5 + 0.3*np.sin(np.pi*x + t)

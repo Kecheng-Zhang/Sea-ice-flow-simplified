@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.12.9)  10 DEC 2023 14:10
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.12.9)  10 DEC 2023 15:02
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -259,20 +259,14 @@ Package hyperref Info: Link coloring OFF on input line 7.
 File: ../NN_graph.png Graphic file (type bmp)
 <../NN_graph.png>
  [2] [3] [4] (./report.aux)
-
-Package rerunfilecheck Warning: File `report.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `report.out':
-(rerunfilecheck)             Before: B465FCD7C0B96159110221761C2EB3FD;799
-(rerunfilecheck)             After:  8F9188D073E8FF4558157C1708B85422;687.
+Package rerunfilecheck Info: File `report.out' has not changed.
+(rerunfilecheck)             Checksum: 8F9188D073E8FF4558157C1708B85422;687.
  ) 
 Here is how much of TeX's memory you used:
- 8622 strings out of 476683
- 136336 string characters out of 5807575
+ 8621 strings out of 476683
+ 136325 string characters out of 5807575
  1854012 words of memory out of 5000000
- 28778 multiletter control sequences out of 15000+600000
+ 28777 multiletter control sequences out of 15000+600000
  517469 words of font info for 56 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  72i,7n,76p,426b,330s stack positions out of 10000i,1000n,20000p,200000b,200000s
