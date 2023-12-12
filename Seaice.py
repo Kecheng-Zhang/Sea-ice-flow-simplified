@@ -49,24 +49,24 @@ class PhysicsLoss(nn.Module):
     
 
 class SeaiceDataset(dataset.Dataset):
-    def __init__(self, initial, iter, dt, f):
+    def __init__(self, initial, iter, dt, f, resize=1):
         self.data = []
         self.data.append(initial)
         self.dt = dt
         self.f = f
-        for i in range(iter):
+        for i in range(1,iter):
             self.data.append(update_state(self.data[-1], self.dt, self.f, i))
+        self.data = np.array(self.data)
+        self.data = self.data[::resize]
+        self.data_flat = self.data.swapaxes(1,2).reshape(-1,2,1)
+        self.data_flat = torch.tensor(self.data_flat, dtype=torch.float32)
         self.data = torch.tensor(self.data, dtype=torch.float32)
         
     def __getitem__(self, index):
-        return self.data[index]
+        return self.data_flat[index]
     
     def __len__(self):
-        return len(self.data)
-    
-    def resize(self, const):
-        self.data = self.data[::const]
-        return self.data
+        return len(self.data_flat)
 
 
 class SeaiceModel(nn.Module):
@@ -111,7 +111,7 @@ def train(model, dataset, f, epochs=3, dt=(10 ** (-3))):
     return model
 
 
-def test(model, dataset, gif_name):
+def test(model, dataset):
     '''Test the model
     
     Args:
@@ -132,6 +132,10 @@ def test(model, dataset, gif_name):
         loss = criterion(pred, data)
         losses.append(loss.item())
     
+    return np.array(losses).mean() ** (0.5) # return RMSE
+
+
+def draw_animation(data, gif_name):
     # create animation
     preds = torch.stack(preds).detach().numpy()
     data_np = dataset.data.detach().numpy()
@@ -163,8 +167,7 @@ def test(model, dataset, gif_name):
     plt.ylabel('Loss')
     plt.savefig(gif_name+"_loss.png")
     plt.close()
-    
-    return np.array(losses).mean() ** (0.5) # return RMSE
+    return
 
 def f1(x, t):
     return 0.5 + 0.3*np.sin(np.pi*x + t)
@@ -185,26 +188,23 @@ The main program
 '''
 iterations = 10000 # number of iterations
 dt = 10 ** (-3) # time step
-epochs = 30 # epoches
+epochs = 3 # epoches
 initial_data = np.array([[0.3, 0.7], [0, 0]])
 train_dataset = SeaiceDataset(initial_data, iterations, dt, f1)
 
 seaice_model = SeaiceModel(2, 10, 2)
 if os.path.exists("seaice_model.pt"):
-    seaice_model.load_state_dict(torch.load("seaice_model.pt"))
+    pass
+    #seaice_model.load_state_dict(torch.load("seaice_model.pt"))
 else:
-    seaice_model = train(seaice_model, train_dataset, f1, epochs, dt)
-    torch.save(seaice_model.state_dict(), "seaice_model.pt")
+    pass
+    #seaice_model = train(seaice_model, train_dataset, f1, epochs, dt)
+    #torch.save(seaice_model.state_dict(), "seaice_model.pt")
 
-losses = []
-for  i in range(16):
-    initial_test_data = np.random.randn(2,2)
-    test_dataset = SeaiceDataset(initial_test_data, iterations*100, dt/100, f_rand)
-    test_dataset.resize(100)
-    loss = test(seaice_model, test_dataset, "seaice_{}".format(i))
-    print("Loss: ", loss)
-    losses.append(loss)
-    
-mean = np.mean(losses)
-print("Mean: ", mean)
-np.savetxt('RMSE.txt', losses, delimiter='\n')
+initial_test_data = np.array([[0.1, 0.2], [0.3, 0.4]])
+print("initial data:")
+print(initial_test_data)
+test_data = SeaiceDataset(initial_test_data, iterations//2000, dt, f2)
+print("test data:")
+print(test_data.data_flat.detach().numpy().reshape(-1,2,2).swapaxes(1,2))
+#rmse = test(seaice_model, test_data, "seaice_f1")
