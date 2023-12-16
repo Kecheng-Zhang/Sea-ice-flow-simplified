@@ -11,14 +11,17 @@ import torch.utils.data.dataloader as dataloader
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+FLOESIZE = 0.1 # radius of the ice floe
 
-def update_state(data, dt, f, index):
+def update_state(data, dt, f, index, r=FLOESIZE, k=0.56):
     '''Update the state of the system
     
     Args:
         data: np.array
         dt: float
         f: function
+        r: radius of the ice
+        k: constant
     
     Returns:
         x_next: float
@@ -30,6 +33,18 @@ def update_state(data, dt, f, index):
     u = f(x, t)
     x_next = x + v*dt
     v_next = (u-v) * np.abs(u-v) * dt + v
+    for i in range(len(x)):
+        x1 = x[i]
+        v1 = v[i]
+        for j in range(len(x)):
+            x2 = x[j]
+            v2 = v[j]
+            if i == j:
+                continue
+            if np.abs(x1 - x2) <= 2*r:
+                dx = (2*r - np.abs(x1 - x2))/2
+                dv = k * dx * (v1 - v2) * dt
+                v_next[i] += dv
     return np.array([x_next, v_next]).T
 
 
@@ -54,7 +69,7 @@ class SeaiceDataset(dataset.Dataset):
         self.data[0,:,:] = initial[:,:]
         self.dt = dt
         self.f = f
-        for i in range(1,iter):
+        for i in tqdm(range(1,iter)):
             new_state = update_state(self.data[i-1], self.dt, self.f, i)
             self.data[i,:,:] = new_state[:,:]
         self.data = np.array(self.data)
@@ -66,6 +81,15 @@ class SeaiceDataset(dataset.Dataset):
     
     def __len__(self):
         return len(self.data)
+    
+    def save_data(self, filename):
+        np.save(filename, self.data.numpy())
+        return
+
+    def load_data(self, filename):
+        self.data = np.load(filename)
+        self.data = torch.tensor(self.data, dtype=torch.float32)
+        return
 
 
 class SeaiceModel(nn.Module):
@@ -141,16 +165,18 @@ def test(model, dataset):
     return preds, losses, rmse
 
 
-def draw_animation(preds, test, losses, gif_name):
+def draw_animation(preds, test, losses, gif_name, r=FLOESIZE):
     # create animation
     fig = plt.figure()
     ys = np.zeros(preds.shape[1])
     def update(i):
         plt.cla()
-        plt.xlim(-1, 7)
+        plt.xlim(-3, 7)
         plt.ylim(-1, 1)
-        plt.scatter(test[i,:,0], ys, label='Ground Truth', color='red')
-        plt.scatter(preds[i,:,0], ys, label='Prediction', color='blue')
+        plt.plot(test[i,:,0], ys,'r.', label='Ground Truth')
+        plt.plot(test[i,:,0]-r, ys,'g|', label='Left border')
+        plt.plot(test[i,:,0]+r, ys,'y|', label='Right border')
+        plt.plot(preds[i,:,0], ys, 'b.', label='Prediction')
         plt.xlabel('Position')
         plt.title(gif_name+' Time: {:.2f}'.format(i*0.001))
         plt.legend(loc='upper right')
@@ -190,11 +216,12 @@ if __name__ == '__main__':
     iterations = 10000 # number of iterations
     dt = 10 ** (-3) # time step
     epochs = 30 # epoches
+    print("Generating dataset...")
     initial_data = np.array([[0.3, 0], [0.7, 0]])
     train_dataset = SeaiceDataset(initial_data, iterations, dt, f1)
 
     print("Generating model...")
-    seaice_model = SeaiceModel(2, 10, 2)
+    seaice_model = SeaiceModel(2, 8, 2)
     if os.path.exists("seaice_model.pt"):
         pass
         seaice_model.load_state_dict(torch.load("seaice_model.pt"))
@@ -205,10 +232,16 @@ if __name__ == '__main__':
     print('Complete!')
 
     print("Testing...")
-    initial_test_data = np.zeros((16,2))
-    for i in range(initial_test_data.shape[0]):
-        initial_test_data[i,0] = 1 - i/8
-    test_data = SeaiceDataset(initial_test_data, iterations*100, dt/100, f2,resize=100)
+    if os.path.exists("seaice_test_data.npy"):
+        pass
+        test_data = SeaiceDataset(initial_data, iterations, dt, f1)
+        test_data.load_data("seaice_test_data.npy")
+    else:
+        initial_test_data = np.zeros((16,2))
+        for i in range(initial_test_data.shape[0]):
+            initial_test_data[i,0] = i * 2 * FLOESIZE -1
+        test_data = SeaiceDataset(initial_test_data, iterations*100, dt/100, f2,resize=100)
+        test_data.save_data("seaice_test_data.npy")
     preds, losses, rmse = test(seaice_model, test_data)
     draw_animation(preds, test_data.data.numpy(), losses, "seaice")
     print('RMSE: ', rmse)
