@@ -43,7 +43,7 @@ def update_state(data, dt, f, index, r=FLOESIZE, k=0.56):
                 continue
             if np.abs(x1 - x2) <= 2*r:
                 dx = (2*r - np.abs(x1 - x2))/2
-                dv = k * dx * (v1 - v2) * dt
+                dv = k * dx * (v1 - v2) * dt * 2
                 v_next[i] += dv
     return np.array([x_next, v_next]).T
 
