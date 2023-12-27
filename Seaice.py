@@ -98,11 +98,13 @@ class SeaiceModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(SeaiceModel, self).__init__()
         self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, output_size)
+        self.linear2 = nn.Linear(hidden_size, hidden_size)
+        self.output = nn.Linear(hidden_size, output_size)
     
     def forward(self, x):
         x = self.linear1(x)
         x = self.linear2(x)
+        x = self.output(x)
         return x
     
     def predict(self, x):
@@ -215,13 +217,13 @@ The main program
 if __name__ == '__main__':
     iterations = 10000 # number of iterations
     dt = 10 ** (-3) # time step
-    epochs = 30 # epoches
+    epochs = 60 # epoches
     print("Generating dataset...")
     initial_data = np.array([[0.3, 0], [0.7, 0]])
     train_dataset = SeaiceDataset(initial_data, iterations, dt, f1)
 
     print("Generating model...")
-    seaice_model = SeaiceModel(2, 8, 2)
+    seaice_model = SeaiceModel(2, 4, 2)
     if os.path.exists("seaice_model.pt"):
         pass
         seaice_model.load_state_dict(torch.load("seaice_model.pt"))
